@@ -36,10 +36,10 @@ class FlowServer:
     def commit(self):
         rsp = requests.post(f"{self.url}/update?softCommit=true&openSearcher=true&waitSearcher=true")
 
-    def analyze(self, image_path):
+    def analyze(self, image_path, apply_modules="duplicate"):
         if image_path.startswith("http"):
             # Got web image - reference via url
-            response = requests.get(f"{self.url}/analyze?input.url={image_path}")
+            response = requests.get(f"{self.url}/analyze?modules.apply={apply_modules}&input.url={image_path}")
             return response.json()['outputs']
         else:
             # Got local image - upload
@@ -47,7 +47,7 @@ class FlowServer:
             base64_image = self.img_to_data_uri(image_path, size=350)
             payload = {'input.data': base64_image}
             # set empty logParamsList= to avoid logging huge log messages when uploading base64 images as parameters
-            response = requests.post(self.url+"/analyze?logParamsList=", data=payload)
+            response = requests.post(f"{self.url}/analyze?modules.apply={apply_modules}&logParamsList=", data=payload)
             return response.json()['outputs']
 
     def clear_collection(self):
